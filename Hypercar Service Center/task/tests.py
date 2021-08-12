@@ -9,8 +9,16 @@ class HyperServiceTestRunner(HyperCarTest):
         # 1 task
         HyperCarTest.check_main_header,
 
-        # 2 task
-        HyperCarTest.check_menu_page_links,
+        # # 2 task
+        # HyperCarTest.check_menu_page_links,
+        # # 3 task
+        # HyperCarTest.check_ticket_page_links,
+
+        # # 4 task
+        # HyperCarTest.check_ticket_page_links_with_menu,
+
+        # 5 task
+        HyperCarTest.check_next,
     ]
 
     @dynamic_test(data=funcs)

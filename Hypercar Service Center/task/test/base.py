@@ -5,6 +5,7 @@ import os
 import re
 import sqlite3
 import urllib
+from urllib.request import urlopen
 
 import requests
 
@@ -20,8 +21,8 @@ class HyperCarTest(DjangoTest):
     use_database = False
 
     COMMON_LINK_PATTERN = '''<a[^>]+href=['"]([a-zA-Z\d/_]+)['"][^>]*>'''
-    CSRF_PATTERN = b'<input[^>]+name="csrfmiddlewaretoken" ' \
-                   b'value="(?P<csrf>\w+)"[^>]*>'
+    CSRF_PATTERN = '<input[^>]+name="csrfmiddlewaretoken" ' \
+                   'value="(?P<csrf>\w+)"[^>]*>'
     GROUPS_FIRST_PATTERN = '<h4>.*?</h4>.*?<ul>.+?</ul>'
     GROUPS_SECOND_PATTERN = (
         '''<a[^>]+href=['"]([a-zA-Z\d/_]+)['"][^>]*>(.+?)</a>'''
@@ -30,6 +31,7 @@ class HyperCarTest(DjangoTest):
     LINK_WITH_TEXT_PATTERN = '''<a[^>]+href=['"]([a-zA-Z\d/_?=]+)['"][^>]*>(.+?)</a>'''
     PARAGRAPH_PATTERN = '<p>(.+?)</p>'
     SRC_PATTERN = '''<source[^>]+src=['"]([a-zA-Z\d/_.]+)['"][^>]*>'''
+    DIV_PATTERN = '''<div[^>]*>(.+?)</div>'''
     TEXT_LINK_PATTERN = '''<a[^>]+href=['"][a-zA-Z\d/_]+['"][^>]*>(.+?)</a>'''
     cookie_jar = http.cookiejar.CookieJar()
     USERNAME = 'Test'
@@ -82,6 +84,138 @@ class HyperCarTest(DjangoTest):
                 )
 
         return CheckResult.correct()
+    def check_ticket_page_links(self):
+
+        ticket_links = ["get_ticket/inflate_tires","get_ticket/change_oil","get_ticket/change_oil","get_ticket/inflate_tires","get_ticket/diagnostic"]
+        result_check = ["Please wait around 0 minutes","Please wait around 0 minutes","Please wait around 2 minutes","Please wait around 9 minutes","Please wait around 14 minutes"]
+
+        i = 0
+
+        for link in ticket_links:
+            try:
+                divs_from_page = re.findall(self.DIV_PATTERN, self.read_page(self.get_url() + link), re.S)
+            except urllib.error.URLError:
+                return CheckResult.wrong(
+                    f'Cannot connect to the {link}.'
+                )
+            divs_from_page = self.__stripped_list(divs_from_page)
+            if result_check[i] not in divs_from_page:
+                print(divs_from_page)
+                return CheckResult.wrong(
+                    f'Page page should contain {result_check[i]}'
+                )
+            i+=1
+
+        return CheckResult.correct()
+
+
+    def check_ticket_page_links_with_menu(self):
+
+        ticket_links = ["get_ticket/inflate_tires","get_ticket/change_oil","get_ticket/change_oil","get_ticket/inflate_tires","get_ticket/diagnostic"]
+        result_check = ["Please wait around 0 minutes","Please wait around 0 minutes","Please wait around 2 minutes","Please wait around 9 minutes","Please wait around 14 minutes"]
+        result_check_menu = ["Inflate tires queue: 1", "Change oil queue: 1", "Change oil queue: 2",
+                        "Inflate tires queue: 2", "Get diagnostic queue: 1"]
+        i = 0
+
+        for link in ticket_links:
+            try:
+                divs_from_page = re.findall(self.DIV_PATTERN, self.read_page(self.get_url() + link), re.S)
+            except urllib.error.URLError:
+                return CheckResult.wrong(
+                    f'Cannot connect to the {link}.'
+                )
+            divs_from_page = self.__stripped_list(divs_from_page)
+            if result_check[i] not in divs_from_page:
+                print(divs_from_page)
+                return CheckResult.wrong(
+                    f'Page page should contain {result_check[i]}'
+                )
+            try:
+                divs_from_page = re.findall(self.DIV_PATTERN, self.read_page(self.get_url() + "processing"), re.S)
+            except urllib.error.URLError:
+                return CheckResult.wrong(
+                    f'Cannot connect to the  "/processing".'
+                )
+            divs_from_page = self.__stripped_list(divs_from_page)
+            if result_check_menu[i] not in divs_from_page:
+                print(divs_from_page)
+                return CheckResult.wrong(
+                    f'Page page should contain {result_check_menu[i]}'
+                )
+            i+=1
+
+        return CheckResult.correct()
+
+    def process_ticket(self):
+        opener = urllib.request.build_opener(
+            urllib.request.HTTPCookieProcessor(self.cookie_jar)
+        )
+        try:
+            response = opener.open(self.get_url() + 'processing')
+        except urllib.error.URLError:
+            return CheckResult.wrong('Not Found: /processing/')
+        csrf_options = re.findall(
+            b'<input[^>]+value="(?P<csrf>\w+)"[^>]*>', response.read()
+        )
+        if not csrf_options:
+            return CheckResult.wrong('Missing csrf_token in the form')
+
+
+
+        try:
+            response = opener.open(
+                self.get_url() + 'processing',
+                data=urllib.parse.urlencode({'csrfmiddlewaretoken': csrf_options[0]}).encode()
+            )
+        except urllib.error.URLError as err:
+            return CheckResult.wrong(f'Cannot signup: {err.reason}')
+        return CheckResult.correct()
+
+    def check_next(self):
+        ticket_links = ["get_ticket/inflate_tires", "get_ticket/change_oil", "get_ticket/change_oil",
+                        "get_ticket/inflate_tires", "get_ticket/diagnostic"]
+        result_check = ["Please wait around 0 minutes", "Please wait around 0 minutes", "Please wait around 2 minutes",
+                        'Please wait around 7 minutes', "Please wait around 10 minutes"]
+        result_check_menu = ["Inflate tires queue: 1", "Change oil queue: 1", "Change oil queue: 2",
+                             "Inflate tires queue: 2", "Get diagnostic queue: 1"]
+        result_next = ["Waiting for the next client","Waiting for the next client","Next ticket #2","Next ticket #3","Next ticket #1"]
+        next_open = [False, False, True, True, True]
+        i = 0
+        for link in ticket_links:
+            try:
+                divs_from_page = re.findall(self.DIV_PATTERN, self.read_page(self.get_url() + link), re.S)
+            except urllib.error.URLError:
+                return CheckResult.wrong(
+                    f'Cannot connect to the {link}.'
+                )
+                divs_from_page = self.__stripped_list(divs_from_page)
+            if result_check[i] not in divs_from_page:
+                print(divs_from_page)
+                return CheckResult.wrong(
+                    f'Page not should contain {result_check[i]}'
+                )
+            if next_open[i]:
+                result = self.process_ticket()
+                if not result.correct():
+                    return result
+            try:
+                divs_from_page = re.findall(self.DIV_PATTERN, self.read_page(self.get_url() + "next"), re.S)
+            except urllib.error.URLError:
+                return CheckResult.wrong(
+                        f'Cannot connect to the  "/next".'
+                    )
+            divs_from_page = self.__stripped_list(divs_from_page)
+            if result_next[i] not in divs_from_page:
+                print(divs_from_page)
+                return CheckResult.wrong(
+                        f'Page not should contain {result_next[i]}'
+                    )
+            i += 1
+
+        return CheckResult.correct()
+
+
+
 
     def __stripped_list(self, list):
         return [item.strip() for item in list]

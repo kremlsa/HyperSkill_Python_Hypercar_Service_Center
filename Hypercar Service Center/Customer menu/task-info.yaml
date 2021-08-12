@@ -374,9 +374,12 @@ files:
 - name: hypercar/templates/menu.html
   visible: true
   learner_created: true
+- name: hypercar/tickets/templates/tickets/main_menu.html
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/85/stages/471/implement#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: Wed, 11 Aug 2021 23:41:12 UTC
-record: -1
+record: 3

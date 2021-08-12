@@ -513,6 +513,71 @@ files:
         def __stripped_list_with_tuple(self, list):
             return [item[0].strip() for item in list]
   learner_created: false
+- name: hypercar/tickets/templates/tickets/processing.html
+  visible: true
+  text: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Inflate tires</title>
+    </head>
+    <body>
+    <div>Change oil queue: {{ oil }}</div>
+    <div>Inflate tires queue: {{ tires }}</div>
+    <div>Get diagnostic queue: {{ diag }}</div>
+
+    <form method="post">{% csrf_token %}
+      <button type="submit">Process next</button>
+    </form>
+    </body>
+    </html>
+  learner_created: true
+- name: hypercar/tickets/templates/tickets/diagnostic.html
+  visible: true
+  text: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Diagnostic tests</title>
+    </head>
+    <body>
+    <div>Your number is {{ number }}</div>
+    <div>Please wait around {{ timeout }} minutes</div>
+    </body>
+    </html>
+  learner_created: true
+- name: hypercar/tickets/templates/tickets/change_oil.html
+  visible: true
+  text: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Change oil</title>
+    </head>
+    <body>
+    <div>Your number is {{ number }}</div>
+    <div>Please wait around {{ timeout }} minutes</div>
+    </body>
+    </html>
+  learner_created: true
+- name: hypercar/tickets/templates/tickets/inflate_tires.html
+  visible: true
+  text: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Inflate tires</title>
+    </head>
+    <body>
+    <div>Your number is {{ number }}</div>
+    <div>Please wait around {{ timeout }} minutes</div>
+    </body>
+    </html>
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/85/stages/474/implement#comment
 status: Unchecked
 record: -1

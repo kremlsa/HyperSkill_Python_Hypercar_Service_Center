@@ -6,9 +6,9 @@
 </head>
 <body>
 <ul>
-  {% for link, name in main_menu.items %}
+  {% for name, link in main_menu.items %}
   <li>
-    <a href="/get_ticket/{{ link.url }}">Chapter {{ link.name }} </a>
+    <a href="/get_ticket/{{ link }}">Chapter {{ name }} </a>
   </li>
   {% endfor %}
 </ul>

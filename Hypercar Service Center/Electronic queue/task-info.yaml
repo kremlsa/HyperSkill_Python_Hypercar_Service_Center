@@ -398,6 +398,18 @@ files:
         def __stripped_list_with_tuple(self, list):
             return [item[0].strip() for item in list]
   learner_created: false
+- name: hypercar/tickets/templates/tickets/diagnostic.html
+  visible: true
+  learner_created: true
+- name: hypercar/tickets/templates/tickets/change_oil.html
+  visible: true
+  learner_created: true
+- name: hypercar/tickets/templates/tickets/inflate_tires.html
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/85/stages/472/implement#comment
-status: Unchecked
-record: -1
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Thu, 12 Aug 2021 23:12:37 UTC
+record: 2
